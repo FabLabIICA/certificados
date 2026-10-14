@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Automático de Certificados</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Generador de Certificados</h1>
+            <p>Selecciona un certificado del catálogo, descarga su plantilla de datos, complétala y súbela junto con el machote para generar todos los documentos automáticamente.</p>
+        </header>
+
+        <!-- CATÁLOGO DE CERTIFICADOS -->
+        <section class="catalogo-section">
+            <h2>Catálogo de Plantillas</h2>
+            <div class="grid-catalog">
+                
+                <!-- Opciones de Certificados -->
+                <div class="card-certificado" data-id="curso_general" data-tags="nombre, curso, fecha, cedula">
+                    <h3>Certificado de Participación General</h3>
+                    <p>Ideal para talleres, conversatorios y seminarios generales.</p>
+                    <p class="etiquetas-info"><strong>Etiquetas requeridas:</strong> <code>{{nombre}}</code>, <code>{{curso}}</code>, <code>{{fecha}}</code>, <code>{{cedula}}</code></p>
+                    <button class="btn-descargar-plantilla" onclick="descargarPlantillaExcel('curso_general')">📥 Descargar Plantilla Excel</button>
+                </div>
+
+                <div class="card-certificado" data-id="taller_tecnico" data-tags="nombre, modulo, instructor, duracion">
+                    <h3>Certificado de Formador Técnico (ECAs)</h3>
+                    <p>Diseñado para escuelas de campo y capacitaciones especializadas.</p>
+                    <p class="etiquetas-info"><strong>Etiquetas requeridas:</strong> <code>{{nombre}}</code>, <code>{{modulo}}</code>, <code>{{instructor}}</code>, <code>{{duracion}}</code></p>
+                    <button class="btn-descargar-plantilla" onclick="descargarPlantillaExcel('taller_tecnico')">📥 Descargar Plantilla Excel</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE GENERACIÓN -->
+        <section class="generador-section">
+            <h2>Generar Lote de Certificados</h2>
+            <form id="formCertificados">
+                <div class="form-group">
+                    <label for="machoteWord">1. Sube tu machote en Word (.docx) con etiquetas <code>{{etiqueta}}</code>:</label>
+                    <input type="file" id="machoteWord" accept=".docx" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="archivoDatos">2. Sube tu archivo de Excel completado (.xlsx o .csv):</label>
+                    <input type="file" id="archivoDatos" accept=".xlsx, .csv" required>
+                </div>
+
+                <button type="submit" id="btnProcesar" class="primary-btn">🚀 Generar y Descargar Certificados (.zip)</button>
+            </form>
+            <div id="loading" class="hidden">Generando archivos, por favor espera...</div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
