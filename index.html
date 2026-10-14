@@ -3,44 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador Automático de Certificados - Catálogo Dinámico</title>
+    <title>Generador Profesional de Certificados</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Catálogo de Certificados</h1>
-            <p>Selecciona una opción del catálogo indexado desde Google Sheets. Descarga su plantilla de datos, complétala y súbela junto con el archivo correspondiente para generar los certificados.</p>
+    <div class="main-container">
+        <header class="app-header">
+            <h1>Plataforma de Certificación Académica</h1>
+            <p>Selecciona un certificado del catálogo sincronizado. Cada opción te permite inspeccionar el machote, descargar su plantilla de datos personalizada y emitir el lote completo de forma inmediata.</p>
         </header>
 
-        <!-- CATÁLOGO DINÁMICO CARGADO DESDE GOOGLE SHEETS -->
-        <section class="catalogo-section">
-            <h2>Plantillas Disponibles</h2>
-            <div id="catalogoWrapper" class="grid-catalog">
-                <!-- Se cargará dinámicamente mediante JavaScript -->
-                <p>Cargando certificados desde Google Sheets...</p>
+        <!-- CATÁLOGO DINÁMICO -->
+        <section class="catalog-section">
+            <h2>Catálogo de Certificados Disponibles</h2>
+            <div id="catalogoWrapper" class="catalog-grid">
+                <div class="loading-state">Cargando catálogo desde Google Sheets...</div>
             </div>
         </section>
+    </div>
 
-        <!-- SECCIÓN DE GENERACIÓN -->
-        <section class="generador-section">
-            <h2>Generar Lote de Certificados</h2>
-            <form id="formCertificados">
+    <!-- MODAL DE PROCESAMIENTO / CARGA DE DATOS -->
+    <div id="modalGenerar" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="cerrarModal()">&times;</span>
+            <h3 id="modalTitulo">Generar Certificados</h3>
+            <p id="modalDescripcion" class="modal-desc"></p>
+            
+            <form id="formGenerarLote" onsubmit="enviarLote(event)">
+                <input type="hidden" id="selectedUrlMachote">
                 <div class="form-group">
-                    <label for="machoteWord">1. Sube el machote en Word (.docx) correspondiente al certificado:</label>
-                    <input type="file" id="machoteWord" accept=".docx" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="archivoDatos">2. Sube tu archivo de datos completado (.xlsx o .csv):</label>
+                    <label for="archivoDatos">Sube tu archivo de Excel o CSV completado:</label>
                     <input type="file" id="archivoDatos" accept=".xlsx, .csv" required>
                 </div>
-
-                <button type="submit" id="btnProcesar" class="primary-btn">🚀 Generar y Descargar Certificados (.zip)</button>
+                <button type="submit" id="btnGenerarLote" class="btn-primary">🚀 Generar y Descargar ZIP</button>
+                <div id="modalLoading" class="hidden spinner-text">Procesando documentos en el servidor... Por favor espera.</div>
             </form>
-            <div id="loading" class="hidden">Generando archivos, por favor espera...</div>
-        </section>
+        </div>
     </div>
 
     <script src="script.js"></script>
