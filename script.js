@@ -1,5 +1,5 @@
 // REEMPLAZA CON LA URL DE TU API DE RENDER O RAILWAY
-const API_URL = "https://generador-certificados-api.onrender.com";
+const API_URL = "https://certificadospython-production.up.railway.app";
 
 // URL TSV exacta de tu Google Sheets
 const SHEET_TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQifnfKxYpgja_qKt6TGJ2xrOfGWAaxVoSF3JvoFMBowmAHV1I5HCtSzaGjVw8Bh47mm2h5ShmYXZn8/pub?gid=0&single=true&output=tsv";
