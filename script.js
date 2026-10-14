@@ -1,12 +1,9 @@
-// REEMPLAZA ESTA URL CON TU URL REAL DE RENDER O RAILWAY
-const API_URL = "https://generador-certificados-api.onrender.com/generar-certificados";
+// REEMPLAZA CON LA URL DE TU API DE RENDER O RAILWAY
+const API_URL = "https://generador-certificados-api.onrender.com";
 
-// URL TSV exacta de tu Google Sheets provista
+// URL TSV exacta de tu Google Sheets
 const SHEET_TSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQifnfKxYpgja_qKt6TGJ2xrOfGWAaxVoSF3JvoFMBowmAHV1I5HCtSzaGjVw8Bh47mm2h5ShmYXZn8/pub?gid=0&single=true&output=tsv";
 
-/**
- * Parsea líneas TSV manejando comillas correctamente
- */
 function parsearLineaTSV(linea) {
     const resultado = [];
     let dentroDeComillas = false;
@@ -27,141 +24,159 @@ function parsearLineaTSV(linea) {
     return resultado;
 }
 
-/**
- * Convierte enlaces de Google Drive de forma robusta para renderizar imágenes
- */
 function convertirLinkDriveAImagen(url) {
-    if (!url || url.trim() === "") return "assets/images/default.jpg";
+    if (!url || url.trim() === "") return "https://via.placeholder.com/400x200?text=Machote";
     const cleanUrl = url.trim();
     const match = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || cleanUrl.match(/id=([a-zA-Z0-9_-]+)/);
     if (!match) return cleanUrl;
     return `https://lh3.googleusercontent.com/d/${match[1]}`;
 }
 
-/**
- * Carga el catálogo dinámicamente desde el TSV de Google Sheets
- */
-async function cargarCatalogoDinamico() {
+async function cargarCatalogo() {
     const wrapper = document.getElementById("catalogoWrapper");
     if (!wrapper) return;
 
     try {
         const response = await fetch(SHEET_TSV_URL);
-        if (!response.ok) throw new Error("Error al conectar con Google Sheets.");
+        if (!response.ok) throw new Error("No se pudo conectar con Google Sheets.");
 
         const tsvTexto = await response.text();
         const filas = tsvTexto.split(/\r?\n/).filter(f => f.trim() !== "");
 
         if (filas.length <= 1) {
-            wrapper.innerHTML = "<p>No hay plantillas registradas en la hoja de cálculo.</p>";
+            wrapper.innerHTML = `<div class="loading-state">No hay certificados registrados en la hoja de cálculo.</div>`;
             return;
         }
 
-        // Mapeo según tus columnas:
-        // col[0] = Nombre, col[1] = Descripción, col[2] = Enlace, col[3] = Imagen de Machote
-        const htmlCards = filas.slice(1).map(row => {
+        // Mapeo columnas: col[0]=Nombre, col[1]=Descripción, col[2]=Enlace Machote, col[3]=Imagen
+        const cardsHtml = filas.slice(1).map(row => {
             const col = parsearLineaTSV(row);
-            const nombre = col[0] || "Certificado sin nombre";
-            const descripcion = col[1] || "Sin descripción disponible.";
-            const enlaceMachote = col[2] && col[2].trim() !== "" ? col[2].trim() : "#";
+            const nombre = col[0] || "Certificado";
+            const descripcion = col[1] || "Sin descripción.";
+            const enlaceMachote = col[2] || "#";
             const imagenMachote = convertirLinkDriveAImagen(col[3]);
 
             return `
-                <div class="card-certificado">
-                    <div class="card-img-wrap">
-                        <img src="${imagenMachote}" alt="${nombre}" onerror="this.src='https://via.placeholder.com/300x160?text=Machote'">
+                <div class="certificate-card">
+                    <div class="card-image">
+                        <img src="${imagenMachote}" alt="${nombre}" onerror="this.src='https://via.placeholder.com/400x200?text=Machote'">
                     </div>
                     <div class="card-body">
                         <h3>${nombre}</h3>
                         <p>${descripcion}</p>
                         <div class="card-actions">
-                            <a href="${enlaceMachote}" target="_blank" rel="noopener noreferrer" class="btn-link">Ver Machote</a>
-                            <button class="btn-plantilla" onclick="descargarPlantillaBase('${nombre}')">📥 Plantilla Datos</button>
+                            <div class="action-row">
+                                <a href="${enlaceMachote}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-view">👁️ Ver Machote</a>
+                                <button onclick="descargarPlantillaDatos('${enlaceMachote}', '${nombre}')" class="btn-sm btn-template">📥 Descargar Plantilla</button>
+                            </div>
+                            <button onclick="abrirModalGenerar('${enlaceMachote}', '${nombre}')" class="btn-sm btn-generate">🚀 Subir Datos y Generar</button>
                         </div>
                     </div>
                 </div>
             `;
         }).join("");
 
-        wrapper.innerHTML = htmlCards;
+        wrapper.innerHTML = cardsHtml;
 
     } catch (error) {
-        console.error("Error cargando el catálogo:", error);
-        wrapper.innerHTML = "<p>Error al conectar con el catálogo de Google Sheets.</p>";
+        console.error(error);
+        wrapper.innerHTML = `<div class="loading-state">Error al cargar el catálogo desde Google Sheets.</div>`;
     }
 }
 
-/**
- * Genera y descarga una plantilla de ejemplo en CSV lista para completarse
- */
-function descargarPlantillaBase(nombreCurso) {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "nombre,cedula,curso,fecha\n";
-    csvContent += "Juan Pérez,1-1111-1111," + nombreCurso + ",Octubre 2026\n";
-    csvContent += "María Gómez,2-2222-2222," + nombreCurso + ",Octubre 2026\n";
+// 1. Descargar plantilla personalizada leyendo el Word desde el backend
+async function descargarPlantillaDatos(urlMachote, nombreCurso) {
+    if (!urlMachote || urlMachote === "#") {
+        alert("El enlace del machote no es válido.");
+        return;
+    }
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `plantilla_datos_${nombreCurso.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    alert("Analizando machote y generando plantilla personalizada...");
+
+    try {
+        const response = await fetch(`${API_URL}/api/plantilla-datos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: urlMachote })
+        });
+
+        if (!response.ok) throw new Error("Error al procesar el machote en el servidor.");
+
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `plantilla_${nombreCurso.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (err) {
+        console.error(err);
+        alert("Ocurrió un error al generar la plantilla de datos.");
+    }
 }
 
-// Lógica del formulario para enviar los archivos a la API de Python y descargar el ZIP
-document.getElementById("formCertificados").addEventListener("submit", async function(e) {
-    e.preventDefault();
+// 2. Control de Modal para Generación
+function abrirModalGenerar(urlMachote, nombreCurso) {
+    document.getElementById("selectedUrlMachote").value = urlMachote;
+    document.getElementById("modalTitulo").innerText = `Generar: ${nombreCurso}`;
+    document.getElementById("modalDescripcion").innerText = "Sube tu archivo completado para este certificado y obtén el archivo ZIP de inmediato.";
+    document.getElementById("archivoDatos").value = "";
+    document.getElementById("modalGenerar").classList.remove("hidden");
+}
 
-    const fileWord = document.getElementById("machoteWord").files[0];
-    const fileDatos = document.getElementById("archivoDatos").files[0];
-    const btnProcesar = document.getElementById("btnProcesar");
-    const loading = document.getElementById("loading");
+function cerrarModal() {
+    document.getElementById("modalGenerar").classList.add("hidden");
+}
 
-    if (!fileWord || !fileDatos) {
-        alert("Por favor selecciona ambos archivos.");
+// 3. Enviar datos y machote seleccionado al backend
+async function enviarLote(event) {
+    event.preventDefault();
+
+    const urlMachote = document.getElementById("selectedUrlMachote").value;
+    const archivoDatos = document.getElementById("archivoDatos").files[0];
+    const btn = document.getElementById("btnGenerarLote");
+    const loading = document.getElementById("modalLoading");
+
+    if (!archivoDatos) {
+        alert("Por favor selecciona un archivo de datos.");
         return;
     }
 
     const formData = new FormData();
-    formData.append("plantilla", fileWord);
-    formData.append("datos", fileDatos);
+    formData.append("url_machote", urlMachote);
+    formData.append("archivo_datos", archivoDatos);
 
-    btnProcesar.disabled = true;
+    btn.disabled = true;
     loading.classList.remove("hidden");
 
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/api/generar-certificados`, {
             method: "POST",
             body: formData
         });
 
-        if (!response.ok) {
-            throw new Error("Error en el servidor al generar los certificados.");
-        }
+        if (!response.ok) throw new Error("Error al generar los certificados.");
 
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "certificados_generados.zip";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "certificados_generados.zip";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
 
-        window.URL.revokeObjectURL(url);
+        cerrarModal();
         alert("¡Certificados generados y descargados con éxito!");
 
     } catch (error) {
         console.error(error);
-        alert("Hubo un error al procesar la solicitud. Revisa la consola o el estado de la API.");
+        alert("Hubo un error al procesar el lote en el servidor.");
     } finally {
-        btnProcesar.disabled = false;
+        btn.disabled = false;
         loading.classList.add("hidden");
     }
-});
+}
 
-// Inicializar al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
-    cargarCatalogoDinamico();
+    cargarCatalogo();
 });
