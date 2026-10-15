@@ -66,10 +66,10 @@ async function cargarCatalogo() {
                         <p>${descripcion}</p>
                         <div class="card-actions">
                             <div class="action-row">
-                                <a href="${enlaceMachote}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-view">👁️ Ver Machote</a>
-                                <button onclick="descargarPlantillaDatos('${enlaceMachote}', '${nombre}')" class="btn-sm btn-template">📥 Descargar Plantilla</button>
+                                <a href="${enlaceMachote}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-view">Ver Machote</a>
+                                <button onclick="descargarPlantillaDatos('${enlaceMachote}', '${nombre}')" class="btn-sm btn-template">Descargar Plantilla</button>
                             </div>
-                            <button onclick="abrirModalGenerar('${enlaceMachote}', '${nombre}')" class="btn-sm btn-generate">🚀 Subir Datos y Generar</button>
+                            <button onclick="abrirModalGenerar('${enlaceMachote}', '${nombre}')" class="btn-sm btn-generate">Subir Datos y Generar</button>
                         </div>
                     </div>
                 </div>
